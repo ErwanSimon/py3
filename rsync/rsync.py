@@ -9,54 +9,12 @@ import socket
 import sys
 import os
 
-DEBUG=False
-SMTPSRV = ''
+DEBUG=True
+SMTPSRV = 'smtp.unice.fr'
 # Nom relatif du repertoire de sauvegarde des anciennes versions (voir doc rsync)
 BACKUPDIR = 'OLD'
 
-# Create the message
-def sendMsg(**kwargs):
-    """Envoyer un message en passant par le serveur smtp interne"""
-    
-    if not 'to' in kwargs:
-        return ("Pas d'adresse fournie, aucun mail envoye !")
-    else:
-        # initialiser nom du serveur envoyant mail
-        fromsrv = socket.getfqdn()
 
-        msg = MIMEText(kwargs['msg']) #initialiser mail meme si msg vide
-        msg['To'] = email.utils.formataddr(('', kwargs['to']))
-        msg['From'] = email.utils.formataddr((
-            'root@' + fromsrv,
-            'root@' + fromsrv))
-      
-    if kwargs['coderetour']:
-        msg['Subject'] = 'Sauvegarde de {} : succes'.format(
-                kwargs['srcsrv'],
-                )
-    else:
-        msg['Subject'] = 'Sauvegarde de {} : echec'.format(
-                kwargs['srcsrv'],
-                )
-
-    server = smtplib.SMTP(SMTPSRV, 25)
-
-    # Si DEBUG on affiche la transaction smtp complete
-    if not DEBUG:
-        server.set_debuglevel(False)
-    else:
-        server.set_debuglevel(True)  # show communication with the server
-
-    try:
-        server.sendmail(
-            'root@' + fromsrv,
-            [kwargs['to']],
-            msg.as_string(),
-            )
-    finally:
-        server.quit()
-        
-    return ("Rapport envoyé !")
 
 def execmd(**kwargs):
     """Execution des commandes shell"""
@@ -130,7 +88,7 @@ if __name__ == '__main__':
     cmds = (
        # commande rsync pour sauvegarde
        "rsync -rltogbpD --del --backup-dir=" + BACKUPDIR + "/`date '+%Y%m%d.%H%M%S'` "
-       + "'-e ssh -o StrictHostKeyChecking=no' root@" + args.srcsrv + ":"
+       + "'-e ssh -o StrictHostKeyChecking=no' erwan@" + args.srcsrv + ":"
        + kwargs['srcrep'] + " " + kwargs['dstrep'],
        # commande find pour nettoyage des fichiers plus vieux que 6 mois
        "find " + os.path.join(kwargs['dstrep'], 'OLD') + " -maxdepth 1 "
@@ -194,8 +152,8 @@ if __name__ == '__main__':
     # Quand on sort de la boucle 'for', on verifie si le dictionnaire
     # d'arguments pour la fct 'sendMsg' est pret.
     # S'il l'est -> executer la fct d'envoi du rapport par mail ! 
-    if 'to' in kwargs:
-        sendMsg(**kwargs)
+  #  if 'to' in kwargs:
+  #      sendMsg(**kwargs)
 
     # sortir
     sys.exit()
