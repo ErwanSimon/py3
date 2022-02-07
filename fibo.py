@@ -1,3 +1,8 @@
+# auteur : erwan.simon@inserm.fr
+#date de premiere modification : 7.02.2022
+
+#!/usr/bin/env python3
+
 import math
 
 def fibo(n):
